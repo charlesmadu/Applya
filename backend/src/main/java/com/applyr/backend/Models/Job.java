@@ -1,26 +1,18 @@
-package com.applyr.backend;
+package com.applyr.backend.Models;
 
-import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity(name = "Job")
 @Table(name = "JOBS")
 public class Job {
-
-    public enum ApplicationStatus{
-        Applied,
-        Interview,
-        Offer,
-        Rejected
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -38,37 +30,28 @@ public class Job {
     @Column(name = "LOCATION", length = 50, nullable = false, unique = false)
     private String location;
 
-    @Column(name = "URL", columnDefinition = "TEXT", nullable = false, unique = false)
+    @Column(name = "URL", columnDefinition = "TEXT", nullable = false, unique = true)
     private String URL;
 
-    @Column(name = "DATE", nullable = false, unique = false)
-    private LocalDate date;
-
-    @Column(name = "NOTES", length = 1000, nullable = true, unique = false)
-    private String notes;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "STATUS", nullable = false, unique = false)
-    private ApplicationStatus status;
+    @OneToMany(mappedBy = "job")
+    private List<UserJob> userjob;
 
     protected Job(){};
 
-    public Job(String title, String company, Integer salary, String location, String URL, LocalDate date, String notes, ApplicationStatus status){
+    public Job(String title, String company, Integer salary, String location, String URL){
         this.title = title;
         this.company = company;
         this.salary = salary;
         this.location = location;
         this.URL = URL;
-        this.date = date;
-        this.notes = notes;
-        this.status = status;
+
     }
 
     @Override
     public String toString(){
         return String.format(
-            "Job[id=%d, Title=%s, Company=%s, Salary=%d, Location=%s, URL=%s, DateApplied=%s, Notes=%s, Status=%s]",
-        this.id, this.title, this.company, this.salary, this.location, this.URL, this.date, this.notes, this.status);
+            "Job[id=%d, Title=%s, Company=%s, Salary=%d, Location=%s, URL=%s]",
+        this.id, this.title, this.company, this.salary, this.location, this.URL);
     }
 
     // Getter Methods
@@ -97,18 +80,6 @@ public class Job {
         return this.URL;
     }
 
-    public LocalDate getDate(){
-        return this.date;
-    }
-
-    public String getNotes(){
-        return this.notes;
-    }
-
-    public ApplicationStatus getStatus(){
-        return this.status;
-    }
-
     // Setter Methods
 
     public void setTitle(String title){
@@ -129,18 +100,6 @@ public class Job {
 
     public void setURL(String URL){
         this.URL = URL;
-    }
-
-    public void setDate(LocalDate date){
-        this.date = date;
-    }
-
-    public void setNotes(String notes){
-        this.notes = notes;
-    }
-
-    public void setStatus(ApplicationStatus status){
-        this.status = status;
     }
     
 }
