@@ -4,6 +4,8 @@ import WeeklyTracker from '../components/WeeklyTracker';
 import AICVTailor from '../components/AICVTailor';
 import JobBoardWidget from '../components/JobBoardWidget';
 import ApplicationTable from '../components/ApplicationTable';
+import Applications from './Applications';
+import CVTailor from './CVTailor';
 
 import { 
   LayoutDashboard, 
@@ -114,56 +116,71 @@ const Dashboard = () => {
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto flex flex-col gap-8">
             {/* 2. Stats Grid Section */}
-            <section>
-              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">At a Glance</h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard 
-                  title="Total Applied" 
-                  value="24" 
-                  icon={Briefcase} 
-                  colorClass="bg-blue-50 text-blue-600"
-                  trend="+4"
-                />
-                <StatCard 
-                  title="In Progress" 
-                  value="8" 
-                  icon={Clock} 
-                  colorClass="bg-amber-50 text-amber-600"
-                />
-                <StatCard 
-                  title="Interviews" 
-                  value="3" 
-                  icon={CheckCircle} 
-                  colorClass="bg-emerald-50 text-emerald-600"
-                />
-                <StatCard 
-                  title="Rejected" 
-                  value="12" 
-                  icon={XCircle} 
-                  colorClass="bg-slate-100 text-slate-600"
-                />
-              </div>
-            </section>
+            {activeTab == 'dashboard' && (
 
-            {/* 3. Analytics & Tools Section (New) */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-96">
-              <div className="lg:col-span-2 h-full">
-                <WeeklyTracker />
-              </div>
-              <div className="h-full">
-                <AICVTailor />
-              </div>
-            </section>
+              <div className='flex flex-col gap-8'>
 
-            {/* 4. Applications & Job Board Section */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-10">
-              <div className="lg:col-span-2">
-                <ApplicationTable />
+              <section>
+                <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">At a Glance</h2>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <StatCard 
+                    title="Total Applied" 
+                    value="24" 
+                    icon={Briefcase} 
+                    colorClass="bg-blue-50 text-blue-600"
+                    trend="+4"
+                  />
+                  <StatCard 
+                    title="In Progress" 
+                    value="8" 
+                    icon={Clock} 
+                    colorClass="bg-amber-50 text-amber-600"
+                  />
+                  <StatCard 
+                    title="Interviews" 
+                    value="3" 
+                    icon={CheckCircle} 
+                    colorClass="bg-emerald-50 text-emerald-600"
+                  />
+                  <StatCard 
+                    title="Rejected" 
+                    value="12" 
+                    icon={XCircle} 
+                    colorClass="bg-slate-100 text-slate-600"
+                  />
+                </div>
+              </section>
+
+              {/* 3. Analytics & Tools Section (New) */}
+              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-96">
+                <div className="lg:col-span-2 h-full">
+                  <WeeklyTracker />
+                </div>
+                <div className="h-full">
+                  <AICVTailor />
+                </div>
+              </section>
+
+              {/* 4. Applications & Job Board Section */}
+              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-10">
+                <div className="lg:col-span-2">
+                  <ApplicationTable />
+                </div>
+                <div className="lg:col-span-1">
+                  <JobBoardWidget />
+                </div>
+              </section>
+
               </div>
-              <div className="lg:col-span-1">
-                <JobBoardWidget />
-              </div>
-            </section>
+            )}
+
+            {activeTab === 'applications' && (
+              <Applications/>
+            )}
+
+            {activeTab === 'cv-tailor' && (
+              <CVTailor />
+            )}
 
           </div>
         </main>
