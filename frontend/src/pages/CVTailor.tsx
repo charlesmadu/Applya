@@ -5,19 +5,49 @@ import Card from '../components/Card';
 const CVTailor = () => {
   const [jobDescription, setJobDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationCount, setGenerationCount] = useState(0); // New state to mock new generations
 
   // Mock function to simulate generation
   const handleGenerate = () => {
-    if (!jobDescription) return;
+    if (!jobDescription || isGenerating) return;
+    
     setIsGenerating(true);
-    setTimeout(() => setIsGenerating(false), 2500);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      setIsGenerating(false);
+      setGenerationCount(prev => prev + 1); // Increment count to show new item added
+      
+      // Optionally clear the input after generation
+      setJobDescription('');
+
+      // In a real app, you would add the new generated CV to a global state/list here
+      // For this mock, we simply update the history.
+
+    }, 2500); // 2.5 second delay
   };
 
-  const recentGenerations = [
+  // Static recent generations
+  const staticGenerations = [
     { id: 1, role: 'Senior Frontend Dev', company: 'Google', date: '2 mins ago', status: 'Ready' },
     { id: 2, role: 'Product Designer', company: 'Spotify', date: '2 days ago', status: 'Ready' },
     { id: 3, role: 'Full Stack Engineer', company: 'Netflix', date: '5 days ago', status: 'Ready' },
   ];
+
+  // Mock dynamic generation to prepend to history
+  const newGeneration = {
+    id: 1000 + generationCount,
+    role: jobDescription.substring(0, 30) + '...',
+    company: 'Custom Match',
+    date: 'Just now',
+    status: 'Ready'
+  };
+
+  // Combined list: New item (if generated) + static items
+  const recentGenerations = (generationCount > 0 
+    ? [newGeneration, ...staticGenerations] 
+    : staticGenerations
+  ).slice(0, 4); // Limit to 4 items in history
 
   return (
     <div className="flex flex-col h-full space-y-6">

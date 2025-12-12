@@ -6,7 +6,7 @@ import JobBoardWidget from '../components/JobBoardWidget';
 import ApplicationTable from '../components/ApplicationTable';
 import Applications from './Applications';
 import CVTailor from './CVTailor';
-
+import Documents from './Documents';
 import { 
   LayoutDashboard, 
   Briefcase, 
@@ -19,6 +19,7 @@ import {
   CheckCircle,
   XCircle
 } from 'lucide-react';
+
 
 
 
@@ -180,6 +181,10 @@ const Dashboard = () => {
 
             {activeTab === 'cv-tailor' && (
               <CVTailor />
+            )}
+
+            {activeTab === 'documents' && (
+              <Documents />
             )}
 
           </div>
