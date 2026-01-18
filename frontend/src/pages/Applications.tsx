@@ -3,21 +3,7 @@ import { Plus, Search, MoreHorizontal, MapPin, Calendar, DollarSign } from 'luci
 
 import { DndContext, useDraggable, useDroppable, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core'; 
-
-interface IApplication {
-  id: number;
-  role: string;
-  company: string;
-  location: string;
-  salary: string;
-  date: string;
-  status: 'Applied' | 'Interview' | 'Offer' | 'Rejected';
-  logo: string;
-  jobUrl?: string;
-  notes?: string;
-  contactName?: string;
-  contactEmail?: string;
-}
+import type { IApplication } from '../types';
 
 interface ApplicationsProps {
   applications: IApplication[];
@@ -25,6 +11,8 @@ interface ApplicationsProps {
   onViewApp: (app: IApplication) => void;
   onEditApp: (app: IApplication) => void;
   onAddApp: () => void;
+  onStatusChange: (appId: number, newStatus: IApplication['status']) => Promise<void>;
+  isLoading: boolean;
 }
 
 const COLUMNS = [
@@ -124,7 +112,7 @@ const DroppableColumn: React.FC<{ columnId: IApplication['status'], label: strin
 };
 
 // --- Main Applications Component ---
-const Applications = ({ applications, setApplications, onViewApp, onEditApp, onAddApp }: ApplicationsProps) => {
+const Applications = ({ applications, setApplications, onViewApp, onEditApp, onAddApp, onStatusChange, isLoading }: ApplicationsProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Configure sensors - drag only activates after moving 8px
@@ -145,12 +133,25 @@ const Applications = ({ applications, setApplications, onViewApp, onEditApp, onA
     const { over, active } = event;
     if (over && active.data.current?.type === 'Application') {
       const newStatus = over.id as IApplication['status'];
-      const draggedAppId = active.id;
+      const draggedAppId = active.id as number;
       const currentApp = applications.find(app => app.id === draggedAppId);
       if (currentApp && currentApp.status === newStatus) return;
-      setApplications(prev => prev.map(app => app.id === draggedAppId ? { ...app, status: newStatus } : app));
+      
+      // Call the API to update status
+      onStatusChange(draggedAppId, newStatus);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-700 rounded-full animate-spin"></div>
+          <p className="text-slate-500">Loading applications...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -181,21 +182,41 @@ const Applications = ({ applications, setApplications, onViewApp, onEditApp, onA
         </div>
       </div>
 
-      {/* Kanban Board */}
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-full overflow-x-auto pb-4">
-          {COLUMNS.map(column => (
-            <DroppableColumn key={column.id} columnId={column.id as IApplication['status']} label={column.label} color={column.color}>
-              {filteredApps.filter(app => app.status === column.id).map(app => (
-                <DraggableApplicationCard key={app.id} app={app} onOpenDetail={onViewApp} onOpenEdit={onEditApp} />
-              ))}
-              {filteredApps.filter(app => app.status === column.id).length === 0 && (
-                <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center text-slate-400 text-sm">No applications</div>
-              )}
-            </DroppableColumn>
-          ))}
+      {/* Empty State */}
+      {applications.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+            <Plus size={32} className="text-purple-600" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-800 mb-2">No applications yet</h3>
+          <p className="text-slate-500 mb-6 max-w-md">
+            Start tracking your job search by adding your first application. Click the button below to get started!
+          </p>
+          <button 
+            onClick={onAddApp}
+            className="flex items-center gap-2 px-6 py-3 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors font-medium shadow-sm shadow-purple-200"
+          >
+            <Plus size={20} />
+            Add Your First Application
+          </button>
         </div>
-      </DndContext>
+      ) : (
+        /* Kanban Board */
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-full overflow-x-auto pb-4">
+            {COLUMNS.map(column => (
+              <DroppableColumn key={column.id} columnId={column.id as IApplication['status']} label={column.label} color={column.color}>
+                {filteredApps.filter(app => app.status === column.id).map(app => (
+                  <DraggableApplicationCard key={app.id} app={app} onOpenDetail={onViewApp} onOpenEdit={onEditApp} />
+                ))}
+                {filteredApps.filter(app => app.status === column.id).length === 0 && (
+                  <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center text-slate-400 text-sm">No applications</div>
+                )}
+              </DroppableColumn>
+            ))}
+          </div>
+        </DndContext>
+      )}
     </div>
   );
 };

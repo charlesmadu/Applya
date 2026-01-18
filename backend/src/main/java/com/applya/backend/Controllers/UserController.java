@@ -1,10 +1,10 @@
-package com.applyr.backend.Controllers;
+package com.applya.backend.Controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.applyr.backend.Models.User;
-import com.applyr.backend.Respositories.UserRepository;
+import com.applya.backend.Models.User;
+import com.applya.backend.Repositories.UserRepository;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable Long id){
-        return this.repository.findById(id).orElseThrow(() -> new RuntimeException("User Id not found !"));
+        return this.repository.findById(id).orElseThrow(() -> new RuntimeException("User not found!"));
     }
 
     @PostMapping
@@ -44,11 +44,11 @@ public class UserController {
     @PutMapping("/{id}")
     public User updateUserById(@PathVariable Long id, @RequestBody User newUser) {
 
-        User user = this.repository.findById(id).orElseThrow(() -> new RuntimeException("User Id not found !"));
+        User user = this.repository.findById(id).orElseThrow(() -> new RuntimeException("User not found!"));
         
         user.setFirstname(newUser.getFirstname());
         user.setLastname(newUser.getLastname());
-        user.setPassword(user.getPassword());
+        user.setPassword(newUser.getPassword());
         user.setProfileURL(newUser.getProfileURL());
         
         return this.repository.save(user);
@@ -58,5 +58,4 @@ public class UserController {
     public void deleteUserById(@PathVariable Long id){
         this.repository.deleteById(id);
     }
-    
 }

@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { applicationsAPI } from '../services/api';
 import Card from '../components/Card';
 import Applications from './Applications';
 import CVTailor from './CVTailor';
 import Documents from './Documents';
+import type { IApplication } from '../types';
 import { 
   LayoutDashboard, 
   Briefcase, 
@@ -24,34 +28,55 @@ import {
   Edit2,
   ExternalLink,
   Trash2,
-  Calendar
+  LogOut
 } from 'lucide-react';
 
-// Shared Application Type
-export interface IApplication {
-  id: number;
-  role: string;
-  company: string;
-  location: string;
-  salary: string;
-  date: string;
-  status: 'Applied' | 'Interview' | 'Offer' | 'Rejected';
-  logo: string;
-  jobUrl?: string;
-  notes?: string;
-  contactName?: string;
-  contactEmail?: string;
-}
+// Shared Application Type (matches backend response)
+export type { IApplication } from '../types';
 
-// Initial data
-const initialAppsData: IApplication[] = [
-  { id: 1, role: 'Senior Frontend Dev', company: 'Google', location: 'London, UK', salary: '£120k', date: 'Oct 24', status: 'Interview', logo: 'G', jobUrl: 'https://careers.google.com/jobs/123', notes: 'Had initial phone screen. Technical interview scheduled for next week.', contactName: 'Sarah Chen', contactEmail: 'sarah.chen@google.com' },
-  { id: 2, role: 'UI Engineer', company: 'Netflix', location: 'Remote', salary: '£140k', date: 'Oct 22', status: 'Applied', logo: 'N', jobUrl: 'https://jobs.netflix.com/456', notes: 'Applied through referral from John.' },
-  { id: 3, role: 'Full Stack Dev', company: 'Amazon', location: 'Dublin, IE', salary: '£110k', date: 'Oct 20', status: 'Rejected', logo: 'A', notes: 'Rejected after final round. Feedback: need more system design experience.' },
-  { id: 4, role: 'React Developer', company: 'Meta', location: 'London, UK', salary: '£130k', date: 'Oct 18', status: 'Offer', logo: 'M', jobUrl: 'https://metacareers.com/789', notes: 'Offer received! £130k base + equity. Need to respond by Nov 1.', contactName: 'Mike Johnson', contactEmail: 'mike.j@meta.com' },
-  { id: 5, role: 'Software Engineer', company: 'Spotify', location: 'Stockholm, SE', salary: '£115k', date: 'Oct 25', status: 'Applied', logo: 'S' },
-  { id: 6, role: 'Backend Engineer', company: 'Apple', location: 'Cupertino, US', salary: '£150k', date: 'Oct 26', status: 'Applied', logo: 'A', jobUrl: 'https://apple.com/careers' },
-];
+// Map backend status (APPLIED) to frontend status (Applied)
+const mapStatus = (status: string): IApplication['status'] => {
+  const statusMap: Record<string, IApplication['status']> = {
+    'APPLIED': 'Applied',
+    'INTERVIEW': 'Interview',
+    'OFFER': 'Offer',
+    'REJECTED': 'Rejected',
+  };
+  return statusMap[status] || 'Applied';
+};
+
+// Map frontend status (Applied) to backend status (APPLIED)
+const mapStatusToBackend = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    'Applied': 'APPLIED',
+    'Interview': 'INTERVIEW',
+    'Offer': 'OFFER',
+    'Rejected': 'REJECTED',
+  };
+  return statusMap[status] || 'APPLIED';
+};
+
+// Transform backend response to frontend format
+const transformApplication = (app: any): IApplication => ({
+  id: app.id,
+  jobId: app.jobId,
+  role: app.title,
+  company: app.company,
+  location: app.location || 'Not specified',
+  salary: app.salary || 'Not specified',
+  date: app.appliedDate ? new Date(app.appliedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A',
+  status: mapStatus(app.status),
+  logo: app.company?.[0]?.toUpperCase() || 'C',
+  jobUrl: app.url,
+  url: app.url,
+  description: app.description,
+  notes: app.notes,
+  contactName: app.contactName,
+  contactEmail: app.contactEmail,
+  appliedDate: app.appliedDate,
+  createdAt: app.createdAt,
+  updatedAt: app.updatedAt,
+});
 
 const COLUMNS = [
   { id: 'Applied', label: 'Applied', color: 'text-blue-700 border-blue-200 bg-blue-50' },
@@ -97,17 +122,9 @@ const StatCard = ({ title, value, icon: Icon, colorClass, trend }: {
 );
 
 // WeeklyTracker Component
-const WeeklyTracker = () => {
-  const data = [
-    { day: 'Mon', count: 2 },
-    { day: 'Tue', count: 5 },
-    { day: 'Wed', count: 3 },
-    { day: 'Thu', count: 8 },
-    { day: 'Fri', count: 4 },
-    { day: 'Sat', count: 1 },
-    { day: 'Sun', count: 0 },
-  ];
-  const max = Math.max(...data.map(d => d.count));
+const WeeklyTracker = ({ data }: { data: { day: string; count: number }[] }) => {
+  const max = Math.max(...data.map(d => d.count), 1); // Minimum 1 to avoid division by zero
+  const totalThisWeek = data.reduce((sum, d) => sum + d.count, 0);
 
   return (
     <Card className="p-6 h-full flex flex-col">
@@ -116,8 +133,8 @@ const WeeklyTracker = () => {
           <h3 className="font-bold text-slate-800">Weekly Activity</h3>
           <p className="text-sm text-slate-500">Applications sent last 7 days</p>
         </div>
-        <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
-          <TrendingUp size={14} className="mr-1" /> +12%
+        <div className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+          {totalThisWeek} total
         </div>
       </div>
       <div className="flex-1 flex items-end justify-between gap-2 mt-2">
@@ -242,13 +259,40 @@ const Badge = ({ status }: { status: string }) => {
 
 // Main Dashboard Component
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [applications, setApplications] = useState<IApplication[]>(initialAppsData);
+  const [applications, setApplications] = useState<IApplication[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [viewingApp, setViewingApp] = useState<IApplication | null>(null);
   const [editingApp, setEditingApp] = useState<IApplication | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch applications from API
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const fetchApplications = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await applicationsAPI.getAll();
+      const transformedData = data.map(transformApplication);
+      setApplications(transformedData);
+    } catch (err: any) {
+      console.error('Failed to fetch applications:', err);
+      setError('Failed to load applications');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Calculate stats from applications
   const stats = {
@@ -259,6 +303,29 @@ const Dashboard = () => {
     rejected: applications.filter(a => a.status === 'Rejected').length,
   };
 
+  // Calculate weekly activity (applications in last 7 days)
+  const getWeeklyActivity = () => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    const weekData = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dayName = days[date.getDay()];
+      
+      const count = applications.filter(app => {
+        if (!app.appliedDate) return false;
+        const appDate = new Date(app.appliedDate);
+        return appDate.toDateString() === date.toDateString();
+      }).length;
+
+      weekData.push({ day: dayName, count });
+    }
+
+    return weekData;
+  };
+
   const navItems = [
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
     { id: 'applications', label: 'Applications', icon: Briefcase },
@@ -266,8 +333,27 @@ const Dashboard = () => {
     { id: 'documents', label: 'My Documents', icon: FileText },
   ];
 
+  // Handle status change from drag and drop
+  const handleStatusChange = async (appId: number, newStatus: IApplication['status']): Promise<void> => {
+    try {
+      await applicationsAPI.updateStatus(appId, mapStatusToBackend(newStatus) as any);
+      setApplications(prev => prev.map(app => 
+        app.id === appId ? { ...app, status: newStatus } : app
+      ));
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      // Revert on error by refetching
+      fetchApplications();
+    }
+  };
+
   const handleNavigateToDocuments = () => setActiveTab('documents');
   const handleNavigateToCVTailor = () => setActiveTab('cv-tailor');
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     if (!editingApp) return;
@@ -279,37 +365,85 @@ const Dashboard = () => {
     });
   };
 
-  const handleEditApp = (e: React.FormEvent) => {
+  const handleEditApp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingApp) return;
-    setApplications(prev => prev.map(app => app.id === editingApp.id ? editingApp : app));
-    setEditingApp(null);
+    
+    try {
+      setIsSaving(true);
+      const updateData = {
+        title: editingApp.role,
+        company: editingApp.company,
+        location: editingApp.location,
+        salary: editingApp.salary,
+        url: editingApp.jobUrl,
+        notes: editingApp.notes,
+        status: mapStatusToBackend(editingApp.status) as any,
+      };
+      
+      const updatedApp = await applicationsAPI.update(editingApp.id, updateData);
+      const transformedApp = transformApplication(updatedApp);
+      setApplications(prev => prev.map(app => app.id === editingApp.id ? transformedApp : app));
+      setEditingApp(null);
+    } catch (err) {
+      console.error('Failed to update application:', err);
+      alert('Failed to update application');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDeleteApplication = () => {
+  const handleDeleteApplication = async () => {
     if (!viewingApp) return;
-    setApplications(prev => prev.filter(app => app.id !== viewingApp.id));
-    setViewingApp(null);
-    setDeleteConfirm(false);
+    try {
+      setIsSaving(true);
+      await applicationsAPI.delete(viewingApp.id);
+      setApplications(prev => prev.filter(app => app.id !== viewingApp.id));
+      setViewingApp(null);
+      setDeleteConfirm(false);
+    } catch (err) {
+      console.error('Failed to delete application:', err);
+      alert('Failed to delete application');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleAddApp = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddApp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const newApp: IApplication = {
-      id: Date.now(),
-      role: formData.get('role') as string,
-      company: formData.get('company') as string,
-      location: formData.get('location') as string || 'Remote',
-      salary: formData.get('salary') as string || 'Not specified',
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      status: formData.get('status') as IApplication['status'] || 'Applied',
-      logo: (formData.get('company') as string)?.[0]?.toUpperCase() || 'C',
-      jobUrl: formData.get('jobUrl') as string || undefined,
-      notes: formData.get('notes') as string || undefined,
-    };
-    setApplications(prev => [newApp, ...prev]);
-    setIsAddModalOpen(false);
+    
+    try {
+      setIsSaving(true);
+      const newAppData = {
+        title: formData.get('role') as string,
+        company: formData.get('company') as string,
+        location: formData.get('location') as string || 'Remote',
+        salary: formData.get('salary') as string || 'Not specified',
+        url: formData.get('jobUrl') as string || undefined,
+        notes: formData.get('notes') as string || undefined,
+        status: mapStatusToBackend(formData.get('status') as string || 'Applied') as any,
+        appliedDate: new Date().toISOString().split('T')[0],
+      };
+      
+      const savedApp = await applicationsAPI.create(newAppData);
+      const transformedApp = transformApplication(savedApp);
+      setApplications(prev => [transformedApp, ...prev]);
+      setIsAddModalOpen(false);
+    } catch (err) {
+      console.error('Failed to add application:', err);
+      alert('Failed to add application');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (user) {
+      return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+    }
+    return 'U';
   };
 
   // Recent applications for the table (last 4)
@@ -322,13 +456,13 @@ const Dashboard = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="h-full flex flex-col">
-          <div className="h-16 flex items-center justify-start px-6 border-b border-slate-100">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="h-screen flex flex-col sticky top-0">
+          <div className="h-16 flex items-center justify-start px-6 border-b border-slate-100 flex-shrink-0">
             <img className="w-8 h-8 flex mr-1" src='/images/applyr-logo.svg'/>
-            <span className="text-xl font-bold text-slate-800 tracking-tight">Applyr</span>
+            <span className="text-xl font-bold text-slate-800 tracking-tight">Applya</span>
           </div>
-          <nav className="flex-1 py-6 px-3 space-y-1">
+          <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -340,19 +474,32 @@ const Dashboard = () => {
               </button>
             ))}
           </nav>
-          <div className="p-4 border-t border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs">AJ</div>
+          
+          {/* User Section with Logout - Always at bottom */}
+          <div className="p-4 border-t border-slate-100 flex-shrink-0 mt-auto bg-white">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs">
+                {getUserInitials()}
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">Alex Johnson</p>
-                <p className="text-xs text-slate-500 truncate">Free Plan</p>
+                <p className="text-sm font-medium text-slate-900 truncate">
+                  {user ? `${user.firstName} ${user.lastName}` : 'User'}
+                </p>
+                <p className="text-xs text-slate-500 truncate">{user?.email || 'Free Plan'}</p>
               </div>
             </div>
+            <button
+              onClick={() => setShowLogoutConfirm(true)}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <LogOut size={16} />
+              Sign Out
+            </button>
           </div>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 lg:ml-64">
         {/* Header */}
         <header className="h-16 bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -380,20 +527,38 @@ const Dashboard = () => {
             {/* Overview Tab */}
             {activeTab === 'dashboard' && (
               <div className='flex flex-col gap-8'>
-                {/* Stats */}
-                <section>
-                  <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">At a Glance</h2>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Total Applied" value={String(stats.total)} icon={Briefcase} colorClass="bg-blue-50 text-blue-600" trend="+4" />
-                    <StatCard title="In Progress" value={String(stats.applied + stats.interview)} icon={Clock} colorClass="bg-amber-50 text-amber-600" />
-                    <StatCard title="Interviews" value={String(stats.interview)} icon={CheckCircle} colorClass="bg-emerald-50 text-emerald-600" />
-                    <StatCard title="Rejected" value={String(stats.rejected)} icon={XCircle} colorClass="bg-slate-100 text-slate-600" />
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-700 rounded-full animate-spin"></div>
+                      <p className="text-slate-500">Loading your data...</p>
+                    </div>
                   </div>
-                </section>
+                ) : error ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <p className="text-red-500 mb-4">{error}</p>
+                      <button onClick={fetchApplications} className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800">
+                        Try Again
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Stats */}
+                    <section>
+                      <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">At a Glance</h2>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard title="Total Applied" value={String(stats.total)} icon={Briefcase} colorClass="bg-blue-50 text-blue-600" />
+                        <StatCard title="In Progress" value={String(stats.applied + stats.interview)} icon={Clock} colorClass="bg-amber-50 text-amber-600" />
+                        <StatCard title="Interviews" value={String(stats.interview)} icon={CheckCircle} colorClass="bg-emerald-50 text-emerald-600" />
+                        <StatCard title="Offers" value={String(stats.offer)} icon={TrendingUp} colorClass="bg-purple-50 text-purple-600" />
+                      </div>
+                    </section>
 
                 {/* Charts & AI Tool */}
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-96">
-                  <div className="lg:col-span-2 h-full"><WeeklyTracker /></div>
+                  <div className="lg:col-span-2 h-full"><WeeklyTracker data={getWeeklyActivity()} /></div>
                   <div className="h-full"><AICVTailorWidget onNavigate={handleNavigateToCVTailor} /></div>
                 </section>
 
@@ -445,6 +610,8 @@ const Dashboard = () => {
                   </div>
                   <div className="lg:col-span-1"><JobBoardWidget /></div>
                 </section>
+                  </>
+                )}
               </div>
             )}
 
@@ -455,6 +622,8 @@ const Dashboard = () => {
                 onViewApp={setViewingApp}
                 onEditApp={setEditingApp}
                 onAddApp={() => setIsAddModalOpen(true)}
+                onStatusChange={handleStatusChange}
+                isLoading={isLoading}
               />
             )}
 
@@ -463,6 +632,35 @@ const Dashboard = () => {
           </div>
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+          <Card className="w-full max-w-sm p-6 mx-4">
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <LogOut size={24} className="text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">Sign Out</h3>
+              <p className="text-slate-500 text-sm mb-6">Are you sure you want to sign out of your account?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* View Application Modal */}
       {viewingApp && (

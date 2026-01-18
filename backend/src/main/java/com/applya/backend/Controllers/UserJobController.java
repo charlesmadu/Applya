@@ -1,13 +1,13 @@
-package com.applyr.backend.Controllers;
+package com.applya.backend.Controllers;
 
 import java.util.List;
 
-import com.applyr.backend.Models.Job;
-import com.applyr.backend.Models.User;
-import com.applyr.backend.Models.UserJob;
-import com.applyr.backend.Respositories.JobRepository;
-import com.applyr.backend.Respositories.UserJobRepository;
-import com.applyr.backend.Respositories.UserRepository;
+import com.applya.backend.Models.Job;
+import com.applya.backend.Models.User;
+import com.applya.backend.Models.UserJob;
+import com.applya.backend.Repositories.JobRepository;
+import com.applya.backend.Repositories.UserJobRepository;
+import com.applya.backend.Repositories.UserRepository;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,14 +39,16 @@ public class UserJobController {
 
     @GetMapping("/{id}")
     public UserJob getUserJob(@PathVariable Long id) {
-        return this.repository.findById(id).orElseThrow(() -> new RuntimeException("UserJob Id not found !"));
+        return this.repository.findById(id).orElseThrow(() -> new RuntimeException("UserJob not found!"));
     }
 
     @PostMapping
     public UserJob createUserJob(@RequestBody UserJob userjob) {
 
-        User user = userRepository.findById(userjob.getUser().getId()).orElseThrow( () -> new RuntimeException("User not found !"));
-        Job job = jobRepository.findById(userjob.getJob().getId()).orElseThrow( () -> new RuntimeException("User not found !"));
+        User user = userRepository.findById(userjob.getUser().getId())
+            .orElseThrow(() -> new RuntimeException("User not found!"));
+        Job job = jobRepository.findById(userjob.getJob().getId())
+            .orElseThrow(() -> new RuntimeException("Job not found!"));
 
         userjob.setUser(user);
         userjob.setJob(job);
@@ -56,11 +58,12 @@ public class UserJobController {
     @PutMapping("/{id}")
     public UserJob updateUserJob(@PathVariable Long id, @RequestBody UserJob newUserJob) {
 
-        UserJob userjob = this.repository.findById(id).orElseThrow( () -> new RuntimeException("UserJob Id not found !"));
+        UserJob userjob = this.repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("UserJob not found!"));
 
         userjob.setUser(newUserJob.getUser());
         userjob.setJob(newUserJob.getJob());
-        userjob.setDate(newUserJob.getDate());
+        userjob.setAppliedDate(newUserJob.getAppliedDate());
         userjob.setNotes(newUserJob.getNotes());
         userjob.setStatus(newUserJob.getStatus());
 
@@ -71,5 +74,4 @@ public class UserJobController {
     public void deleteUserJobById(@PathVariable Long id){
         this.repository.deleteById(id);
     }
-       
 }

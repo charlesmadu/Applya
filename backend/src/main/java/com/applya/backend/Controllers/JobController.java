@@ -1,10 +1,10 @@
-package com.applyr.backend.Controllers;
+package com.applya.backend.Controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.applyr.backend.Models.Job;
-import com.applyr.backend.Respositories.JobRepository;
+import com.applya.backend.Models.Job;
+import com.applya.backend.Repositories.JobRepository;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class JobController {
 
     @GetMapping("/{id}")
     public Job getJobById(@PathVariable Long id) {
-        return this.repository.findById(id).orElseThrow(() -> new RuntimeException("Product not found !"));
+        return this.repository.findById(id).orElseThrow(() -> new RuntimeException("Job not found!"));
     }
 
     @PostMapping
@@ -49,8 +49,7 @@ public class JobController {
         job.setCompany(updatedJob.getCompany());
         job.setSalary(updatedJob.getSalary());
         job.setLocation(updatedJob.getLocation());
-        job.setURL(updatedJob.getURL());
-
+        job.setUrl(updatedJob.getUrl());
 
         return this.repository.save(job);
     }
@@ -59,5 +58,4 @@ public class JobController {
     public void deleteJobById(@PathVariable Long id){
         this.repository.deleteById(id);
     }
-
 }
