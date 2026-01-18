@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { applicationsAPI } from '../services/api';
 import Card from '../components/Card';
+import ThemeToggle from '../components/ThemeToggle';
 import Applications from './Applications';
 import CVTailor from './CVTailor';
 import Documents from './Documents';
@@ -96,60 +98,54 @@ const getStatusColor = (status: IApplication['status']) => {
 };
 
 // StatCard Component
-const StatCard = ({ title, value, icon: Icon, colorClass, trend }: {
+const StatCard = ({ title, value, icon: Icon, colorClass }: {
   title: string;
   value: string;
   icon: React.ElementType;
   colorClass: string;
-  trend?: string;
 }) => (
-  <Card className="p-4 flex flex-col justify-between hover:shadow-md transition-shadow duration-200">
+  <Card className="p-4 flex flex-col justify-between hover:shadow-md dark:hover:shadow-purple-500/5 transition-shadow duration-200">
     <div className="flex items-start justify-between">
       <div className={`p-2 rounded-lg ${colorClass}`}>
         <Icon size={20} />
       </div>
-      {trend && (
-        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-          {trend}
-        </span>
-      )}
     </div>
     <div className="mt-3">
-      <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
-      <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{title}</p>
+      <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</h3>
+      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">{title}</p>
     </div>
   </Card>
 );
 
 // WeeklyTracker Component
 const WeeklyTracker = ({ data }: { data: { day: string; count: number }[] }) => {
-  const max = Math.max(...data.map(d => d.count), 1); // Minimum 1 to avoid division by zero
+  const max = Math.max(...data.map(d => d.count), 1);
   const totalThisWeek = data.reduce((sum, d) => sum + d.count, 0);
 
   return (
     <Card className="p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-bold text-slate-800">Weekly Activity</h3>
-          <p className="text-sm text-slate-500">Applications sent last 7 days</p>
+          <h3 className="font-bold text-slate-800 dark:text-slate-100">Weekly Activity</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Applications sent last 7 days</p>
         </div>
-        <div className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+        <div className="bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 px-3 py-1 rounded-full text-xs font-bold flex items-center">
           {totalThisWeek} total
         </div>
       </div>
       <div className="flex-1 flex items-end justify-between gap-2 mt-2">
         {data.map((item, i) => (
           <div key={i} className="flex flex-col items-center w-full group cursor-pointer">
-            <div className="relative w-full max-w-[32px] bg-purple-50 rounded-t-md h-32 overflow-hidden flex items-end">
+            <div className="relative w-full max-w-[32px] bg-slate-100 dark:bg-slate-800 rounded-t-md h-32 overflow-hidden flex items-end">
               <div 
                 style={{ height: `${(item.count / max) * 100}%` }} 
-                className={`w-full rounded-t-md transition-all duration-700 ease-out ${item.count > 0 ? 'bg-purple-500 group-hover:bg-purple-600' : 'bg-transparent'}`}
+                className={`w-full rounded-t-md transition-all duration-700 ease-out ${item.count > 0 ? 'bg-purple-500 dark:bg-purple-500 group-hover:bg-purple-600' : 'bg-transparent'}`}
               />
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
                 {item.count} apps
               </div>
             </div>
-            <span className="text-xs font-medium text-slate-400 mt-2">{item.day}</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-500 mt-2">{item.day}</span>
           </div>
         ))}
       </div>
@@ -245,10 +241,10 @@ const JobBoardWidget = () => {
 // Badge Component
 const Badge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
-    Applied: "bg-blue-50 text-blue-700 border-blue-100",
-    Interview: "bg-amber-50 text-amber-700 border-amber-100",
-    Offer: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    Rejected: "bg-slate-50 text-slate-600 border-slate-100", 
+    Applied: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30",
+    Interview: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
+    Offer: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
+    Rejected: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-600", 
   };
   return (
     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${styles[status] || styles.Applied}`}>
@@ -261,6 +257,7 @@ const Badge = ({ status }: { status: string }) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
   
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -450,47 +447,49 @@ const Dashboard = () => {
   const recentApps = [...applications].slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex">
       {isSidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="h-screen flex flex-col sticky top-0">
-          <div className="h-16 flex items-center justify-start px-6 border-b border-slate-100 flex-shrink-0">
+          <div className="h-16 flex items-center justify-start px-6 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
             <img className="w-8 h-8 flex mr-1" src='/images/applyr-logo.svg'/>
-            <span className="text-xl font-bold text-slate-800 tracking-tight">Applya</span>
+            <span className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Applya</span>
           </div>
           <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                className={`w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === item.id ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                className={`w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === item.id 
+                  ? 'bg-purple-600 text-white' 
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'}`}
               >
-                <item.icon size={18} className={`mr-3 ${activeTab === item.id ? 'text-purple-600' : 'text-slate-400'}`} />
+                <item.icon size={18} className={`mr-3 ${activeTab === item.id ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
                 {item.label}
               </button>
             ))}
           </nav>
           
           {/* User Section with Logout - Always at bottom */}
-          <div className="p-4 border-t border-slate-100 flex-shrink-0 mt-auto bg-white">
+          <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex-shrink-0 mt-auto bg-white dark:bg-slate-900">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-xs">
+              <div className="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center text-purple-700 dark:text-purple-400 font-bold text-xs">
                 {getUserInitials()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                   {user ? `${user.firstName} ${user.lastName}` : 'User'}
                 </p>
-                <p className="text-xs text-slate-500 truncate">{user?.email || 'Free Plan'}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500 truncate">{user?.email || 'Free Plan'}</p>
               </div>
             </div>
             <button
               onClick={() => setShowLogoutConfirm(true)}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
             >
               <LogOut size={16} />
               Sign Out
@@ -501,27 +500,28 @@ const Dashboard = () => {
 
       <div className="flex-1 flex flex-col min-h-screen min-w-0 lg:ml-64">
         {/* Header */}
-        <header className="h-16 bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between">
+        <header className="h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1 text-slate-500"><Menu size={24} /></button>
-            <h1 className="text-lg font-bold text-slate-800 hidden sm:block">
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-1 text-slate-500 dark:text-slate-400"><Menu size={24} /></button>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 hidden sm:block">
               {navItems.find(n => n.id === activeTab)?.label || 'Dashboard'}
             </h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <div className="relative hidden sm:block">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input type="text" placeholder="Search applications..." className="pl-9 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-purple-500 w-64 outline-none transition-all" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <input type="text" placeholder="Search applications..." className="pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border border-transparent dark:border-slate-700 rounded-full text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent w-64 outline-none transition-all text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500" />
             </div>
-            <button className="p-2 text-slate-400 hover:text-purple-600 transition-colors relative">
+            <ThemeToggle />
+            <button className="p-2 text-slate-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors relative">
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
             </button>
           </div>
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-8 overflow-y-auto bg-slate-100 dark:bg-slate-950">
           <div className="max-w-6xl mx-auto flex flex-col gap-8">
             
             {/* Overview Tab */}
@@ -530,14 +530,14 @@ const Dashboard = () => {
                 {isLoading ? (
                   <div className="flex items-center justify-center py-20">
                     <div className="flex flex-col items-center gap-4">
-                      <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-700 rounded-full animate-spin"></div>
-                      <p className="text-slate-500">Loading your data...</p>
+                      <div className="w-10 h-10 border-4 border-purple-200 dark:border-purple-800 border-t-purple-700 dark:border-t-purple-400 rounded-full animate-spin"></div>
+                      <p className="text-slate-500 dark:text-slate-400">Loading your data...</p>
                     </div>
                   </div>
                 ) : error ? (
                   <div className="flex items-center justify-center py-20">
                     <div className="text-center">
-                      <p className="text-red-500 mb-4">{error}</p>
+                      <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>
                       <button onClick={fetchApplications} className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800">
                         Try Again
                       </button>
@@ -547,12 +547,12 @@ const Dashboard = () => {
                   <>
                     {/* Stats */}
                     <section>
-                      <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">At a Glance</h2>
+                      <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">At a Glance</h2>
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard title="Total Applied" value={String(stats.total)} icon={Briefcase} colorClass="bg-blue-50 text-blue-600" />
-                        <StatCard title="In Progress" value={String(stats.applied + stats.interview)} icon={Clock} colorClass="bg-amber-50 text-amber-600" />
-                        <StatCard title="Interviews" value={String(stats.interview)} icon={CheckCircle} colorClass="bg-emerald-50 text-emerald-600" />
-                        <StatCard title="Offers" value={String(stats.offer)} icon={TrendingUp} colorClass="bg-purple-50 text-purple-600" />
+                        <StatCard title="Total Applied" value={String(stats.total)} icon={Briefcase} colorClass="bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400" />
+                        <StatCard title="In Progress" value={String(stats.applied + stats.interview)} icon={Clock} colorClass="bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400" />
+                        <StatCard title="Interviews" value={String(stats.interview)} icon={CheckCircle} colorClass="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" />
+                        <StatCard title="Offers" value={String(stats.offer)} icon={TrendingUp} colorClass="bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400" />
                       </div>
                     </section>
 
@@ -566,20 +566,20 @@ const Dashboard = () => {
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-10">
                   <div className="lg:col-span-2">
                     <Card className="overflow-hidden h-full">
-                      <div className="p-6 border-b border-purple-50 flex justify-between items-center">
-                        <h3 className="font-bold text-slate-800">Recent Applications</h3>
+                      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100">Recent Applications</h3>
                         <div className="flex gap-2">
-                          <button onClick={() => setActiveTab('applications')} className="text-xs px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors font-medium">
+                          <button onClick={() => setActiveTab('applications')} className="text-xs px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors font-medium">
                             View All
                           </button>
-                          <button onClick={() => setIsAddModalOpen(true)} className="text-xs px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white shadow-sm shadow-purple-200 rounded-lg transition-colors font-medium inline-flex items-center">
+                          <button onClick={() => setIsAddModalOpen(true)} className="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm rounded-lg transition-colors font-medium inline-flex items-center">
                             <Plus size={14} className="mr-1" /> Add New
                           </button>
                         </div>
                       </div>
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                          <thead className="text-xs text-slate-500 uppercase bg-slate-50/50">
+                          <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-800/50">
                             <tr>
                               <th className="px-6 py-3 font-medium">Role & Company</th>
                               <th className="px-6 py-3 font-medium">Date Applied</th>
@@ -587,17 +587,17 @@ const Dashboard = () => {
                               <th className="px-6 py-3 font-medium text-right">Action</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-50">
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {recentApps.map((app) => (
-                              <tr key={app.id} onClick={() => setViewingApp(app)} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
+                              <tr key={app.id} onClick={() => setViewingApp(app)} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer">
                                 <td className="px-6 py-4">
-                                  <p className="font-semibold text-slate-800 group-hover:text-purple-700 transition-colors">{app.role}</p>
-                                  <p className="text-xs text-slate-500">{app.company}</p>
+                                  <p className="font-semibold text-slate-800 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">{app.role}</p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">{app.company}</p>
                                 </td>
-                                <td className="px-6 py-4 text-slate-500">{app.date}</td>
+                                <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{app.date}</td>
                                 <td className="px-6 py-4"><Badge status={app.status} /></td>
                                 <td className="px-6 py-4 text-right">
-                                  <button onClick={(e) => { e.stopPropagation(); setEditingApp(app); }} className="text-slate-400 hover:text-purple-600 transition-colors p-1 rounded-md hover:bg-slate-100">
+                                  <button onClick={(e) => { e.stopPropagation(); setEditingApp(app); }} className="text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800">
                                     <MoreHorizontal size={18} />
                                   </button>
                                 </td>
@@ -633,20 +633,20 @@ const Dashboard = () => {
         </main>
       </div>
 
-      {/* Logout Confirmation Modal */}
+      // Logout Confirmation Modal */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <Card className="w-full max-w-sm p-6 mx-4">
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                <LogOut size={24} className="text-red-600" />
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                <LogOut size={24} className="text-red-600 dark:text-red-400" />
               </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-2">Sign Out</h3>
-              <p className="text-slate-500 text-sm mb-6">Are you sure you want to sign out of your account?</p>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Sign Out</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Are you sure you want to sign out of your account?</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium"
+                  className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm font-medium"
                 >
                   Cancel
                 </button>
