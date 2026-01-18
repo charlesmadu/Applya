@@ -21,6 +21,10 @@ interface GeneratedCV {
   jobDescriptionPreview: string;
 }
 
+interface CVTailorProps {
+  onNavigateToDocuments?: () => void;
+}
+
 // Mock uploaded resumes (in real app, this would come from shared state/context)
 const uploadedResumes: Document[] = [
   { id: 1, name: 'My_Master_Resume_v4.pdf', type: 'Resume', size: '1.2 MB', date: 'Oct 24, 2025' },
@@ -28,7 +32,7 @@ const uploadedResumes: Document[] = [
   { id: 6, name: 'Frontend_Dev_Resume.docx', type: 'Resume', size: '1.1 MB', date: 'Oct 15, 2025' },
 ];
 
-const CVTailor = () => {
+const CVTailor = ({ onNavigateToDocuments }: CVTailorProps) => {
   const [jobDescription, setJobDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedResume, setSelectedResume] = useState<Document>(uploadedResumes[0]);
@@ -45,12 +49,10 @@ const CVTailor = () => {
 
   // Extract role and company from job description (simple mock parsing)
   const parseJobDescription = (text: string): { role: string; company: string } => {
-    // In a real app, this would use AI/NLP to extract info
     const lines = text.split('\n').filter(l => l.trim());
     let role = 'Custom Role';
     let company = 'Company';
 
-    // Simple heuristics
     if (lines.length > 0) {
       const firstLine = lines[0].trim();
       if (firstLine.length < 50) {
@@ -58,7 +60,6 @@ const CVTailor = () => {
       }
     }
 
-    // Look for company patterns
     const companyMatch = text.match(/(?:at|@|for)\s+([A-Z][a-zA-Z\s]+?)(?:\.|,|\n|$)/);
     if (companyMatch) {
       company = companyMatch[1].trim();
@@ -97,7 +98,6 @@ const CVTailor = () => {
   };
 
   const handleDownload = (cv: GeneratedCV) => {
-    // In real app, this would download the actual file
     console.log('Downloading:', cv.role);
     alert(`Downloading: ${cv.role} - Tailored CV.pdf`);
   };
@@ -110,6 +110,13 @@ const CVTailor = () => {
       role: cv.role + ' (Copy)',
     };
     setGeneratedCVs(prev => [duplicate, ...prev]);
+  };
+
+  const handleUploadNewResume = () => {
+    setIsResumeDropdownOpen(false);
+    if (onNavigateToDocuments) {
+      onNavigateToDocuments();
+    }
   };
 
   return (
@@ -188,13 +195,12 @@ const CVTailor = () => {
                         )}
                       </div>
                       <div className="p-2 border-t border-slate-100 bg-slate-50">
-                        <a 
-                          href="#" 
-                          onClick={(e) => { e.preventDefault(); /* Navigate to documents */ }}
-                          className="text-xs font-medium text-purple-600 hover:text-purple-700"
+                        <button 
+                          onClick={handleUploadNewResume}
+                          className="text-xs font-medium text-purple-600 hover:text-purple-700 w-full text-left"
                         >
                           + Upload new resume
-                        </a>
+                        </button>
                       </div>
                     </div>
                   )}
