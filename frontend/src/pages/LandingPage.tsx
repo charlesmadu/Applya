@@ -8,7 +8,7 @@ const LandingPage = () => {
         <a href="#" className="flex items-center">
           <img
           
-            src="/images/applyr-logo.svg"
+            src="/images/applya-logo.svg"
             className="h-6 mr-3 sm:h-9"
             alt="Applya Logo"
           />
@@ -114,7 +114,7 @@ const LandingPage = () => {
             href="https://github.com/charlesmadu"
             className="inline-flex items-center justify-center w-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
           >
-            Try Applyr Now
+            Try Applya Now
           </a>
           <a
             href="https://www.figma.com/community/file/1125744163617429490"
@@ -134,7 +134,7 @@ const LandingPage = () => {
 <section className="bg-whitepy-10 md:py-14 xl:py-24">
   <div className="container mx-auto px-4">
     <h4 className="text-4xl font-bold text-center mb-10">
-      Why Choose Applyr?
+      Why Choose Applya?
     </h4>
     
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-4">
@@ -255,7 +255,7 @@ const LandingPage = () => {
           Stay Organized, Stay Ahead
         </h2>
         <p className="mb-8 font-light lg:text-xl">
-          Applyr brings all your job applications into one organized dashboard. Track statuses, set reminders, and visualize your progress with tools designed specifically for modern job seekers.
+          Applya brings all your job applications into one organized dashboard. Track statuses, set reminders, and visualize your progress with tools designed specifically for modern job seekers.
         </p>
         
         {/* List */}
@@ -364,7 +364,7 @@ const LandingPage = () => {
           className="flex items-center justify-center mb-5 text-2xl font-semibold text-gray-900 dark:text-white"
         >
           <img
-            src="/images/applyr-logo.svg"
+            src="/images/applya-logo.svg"
             className="h-6 mr-3 sm:h-9"
             alt="Appylr Logo"
           />
@@ -372,7 +372,7 @@ const LandingPage = () => {
         </a>
 
         <span className="block text-sm text-center text-gray-500 dark:text-gray-400">
-          © Applyr™ - All Rights Reserved. 
+          © Applya™ - All Rights Reserved. 
         </span>
 
         </div>

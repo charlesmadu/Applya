@@ -10,7 +10,6 @@ interface Document {
   date: string;
 }
 
-// Mock data for documents
 const initialDocuments: Document[] = [
   { id: 1, name: 'My_Master_Resume_v4.pdf', type: 'Resume', size: '1.2 MB', date: 'Oct 24, 2025' },
   { id: 2, name: 'Cover_Letter_Google.docx', type: 'Cover Letter', size: '0.8 MB', date: 'Oct 25, 2025' },
@@ -27,7 +26,6 @@ const Documents = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
   
-  // Form state for new document
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [docType, setDocType] = useState<Document['type']>('Resume');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +47,7 @@ const Documents = () => {
 
   const handleFileSelect = (file: File) => {
     const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
 
     if (!validTypes.includes(file.type)) {
       alert('Invalid file type. Please upload PDF, DOCX, or TXT files.');
@@ -120,11 +118,11 @@ const Documents = () => {
 
   const getTypeColor = (type: Document['type']) => {
     const colors: Record<Document['type'], string> = {
-      'Resume': 'text-purple-600 bg-purple-50 border-purple-100',
-      'Cover Letter': 'text-blue-600 bg-blue-50 border-blue-100',
-      'Certification': 'text-emerald-600 bg-emerald-50 border-emerald-100',
-      'Reference': 'text-amber-600 bg-amber-50 border-amber-100',
-      'Other': 'text-slate-600 bg-slate-50 border-slate-100',
+      'Resume': 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 border-purple-100 dark:border-purple-800',
+      'Cover Letter': 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border-blue-100 dark:border-blue-800',
+      'Certification': 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-800',
+      'Reference': 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-800',
+      'Other': 'text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-700 border-slate-100 dark:border-slate-600',
     };
     return colors[type];
   };
@@ -134,25 +132,25 @@ const Documents = () => {
       {/* Page Header and Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="text-purple-600" /> My Documents
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <FileText className="text-purple-600 dark:text-purple-400" /> My Documents
           </h2>
-          <p className="text-slate-500">Manage your resumes, cover letters, and certifications in one place.</p>
+          <p className="text-slate-500 dark:text-slate-400">Manage your resumes, cover letters, and certifications in one place.</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input 
               type="text" 
               placeholder="Search documents..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full sm:w-64 pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+              className="w-full sm:w-64 pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-purple-500 outline-none transition-all"
             />
           </div>
           <button 
             onClick={openUploadModal}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors text-sm font-medium shadow-sm shadow-purple-200 whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium shadow-sm whitespace-nowrap"
           >
             <Plus size={16} />
             <span className="hidden sm:inline">Upload New</span>
@@ -168,31 +166,31 @@ const Documents = () => {
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={openUploadModal}
-        className={`p-8 border-2 border-dashed rounded-xl text-center bg-white cursor-pointer transition-all ${
+        className={`p-8 border-2 border-dashed rounded-xl text-center bg-white dark:bg-slate-800 cursor-pointer transition-all ${
           dragActive 
-            ? 'border-purple-500 bg-purple-50' 
-            : 'border-slate-300 hover:border-purple-400 hover:bg-slate-50'
+            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+            : 'border-slate-300 dark:border-slate-600 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-slate-50 dark:hover:bg-slate-700/50'
         }`}
       >
-        <UploadCloud size={32} className={`mx-auto mb-2 ${dragActive ? 'text-purple-500' : 'text-slate-400'}`} />
-        <p className="font-semibold text-slate-700">Drag & drop your files here, or click to browse</p>
-        <p className="text-sm text-slate-500">Max file size: 5MB. Supported formats: PDF, DOCX, TXT.</p>
+        <UploadCloud size={32} className={`mx-auto mb-2 ${dragActive ? 'text-purple-500' : 'text-slate-400 dark:text-slate-500'}`} />
+        <p className="font-semibold text-slate-700 dark:text-slate-200">Drag & drop your files here, or click to browse</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Max file size: 5MB. Supported formats: PDF, DOCX, TXT.</p>
       </div>
 
       {/* Documents Table */}
       <Card className="overflow-hidden">
         {filteredDocuments.length === 0 ? (
           <div className="p-12 text-center">
-            <File size={48} className="mx-auto mb-4 text-slate-300" />
-            <h3 className="text-lg font-semibold text-slate-700 mb-1">No documents found</h3>
-            <p className="text-slate-500 text-sm">
+            <File size={48} className="mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-1">No documents found</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
               {searchTerm ? 'Try a different search term' : 'Upload your first document to get started'}
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50/50">
+              <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-800/80">
                 <tr>
                   <th className="px-6 py-3 font-medium">File Name</th>
                   <th className="px-6 py-3 font-medium">Type</th>
@@ -201,13 +199,13 @@ const Documents = () => {
                   <th className="px-6 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {filteredDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <tr key={doc.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <FileText size={18} className="text-slate-400" />
-                        <span className="font-semibold text-slate-800 group-hover:text-purple-700 transition-colors">
+                        <FileText size={18} className="text-slate-400 dark:text-slate-500" />
+                        <span className="font-semibold text-slate-800 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                           {doc.name}
                         </span>
                       </div>
@@ -217,28 +215,28 @@ const Documents = () => {
                         {doc.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500">{doc.size}</td>
-                    <td className="px-6 py-4 text-slate-500">{doc.date}</td>
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{doc.size}</td>
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{doc.date}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-1">
                         <button 
-                          className="text-slate-400 hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-blue-50" 
+                          className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20" 
                           title="Download"
                         >
                           <Download size={16} />
                         </button>
                         {deleteConfirm === doc.id ? (
-                          <div className="flex items-center gap-1 bg-red-50 rounded-lg px-2">
-                            <span className="text-xs text-red-600 font-medium">Delete?</span>
+                          <div className="flex items-center gap-1 bg-red-50 dark:bg-red-900/20 rounded-lg px-2">
+                            <span className="text-xs text-red-600 dark:text-red-400 font-medium">Delete?</span>
                             <button 
                               onClick={() => handleDeleteDocument(doc.id)}
-                              className="text-red-600 hover:text-red-700 p-1 font-bold text-xs"
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 p-1 font-bold text-xs"
                             >
                               Yes
                             </button>
                             <button 
                               onClick={() => setDeleteConfirm(null)}
-                              className="text-slate-500 hover:text-slate-700 p-1 font-bold text-xs"
+                              className="text-slate-500 dark:text-slate-400 hover:text-slate-700 p-1 font-bold text-xs"
                             >
                               No
                             </button>
@@ -246,7 +244,7 @@ const Documents = () => {
                         ) : (
                           <button 
                             onClick={() => setDeleteConfirm(doc.id)}
-                            className="text-slate-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50" 
+                            className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20" 
                             title="Delete"
                           >
                             <Trash2 size={16} />
@@ -263,22 +261,22 @@ const Documents = () => {
       </Card>
 
       {/* Document count */}
-      <p className="text-sm text-slate-500 text-center">
+      <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
         {filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''} 
         {searchTerm && ` matching "${searchTerm}"`}
       </p>
 
       {/* Upload Modal */}
       {isUploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <Card className="w-full max-w-md p-6 mx-4">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
-              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <UploadCloud size={20} className="text-purple-600" /> Upload Document
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-700 mb-4">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <UploadCloud size={20} className="text-purple-600 dark:text-purple-400" /> Upload Document
               </h3>
               <button 
                 onClick={() => setIsUploadModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <X size={20} />
               </button>
@@ -287,7 +285,7 @@ const Documents = () => {
             <form onSubmit={handleAddDocument} className="space-y-4">
               {/* File Selection Area */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Select File</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Select File</label>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -297,20 +295,20 @@ const Documents = () => {
                 />
                 
                 {selectedFile ? (
-                  <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg bg-slate-50">
+                  <div className="flex items-center justify-between p-4 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <FileText size={20} className="text-purple-600" />
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+                        <FileText size={20} className="text-purple-600 dark:text-purple-400" />
                       </div>
                       <div>
-                        <p className="font-medium text-slate-800 text-sm">{selectedFile.name}</p>
-                        <p className="text-xs text-slate-500">{formatFileSize(selectedFile.size)}</p>
+                        <p className="font-medium text-slate-800 dark:text-white text-sm">{selectedFile.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{formatFileSize(selectedFile.size)}</p>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => setSelectedFile(null)}
-                      className="text-slate-400 hover:text-red-500 p-1"
+                      className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1"
                     >
                       <X size={16} />
                     </button>
@@ -319,22 +317,22 @@ const Documents = () => {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full p-6 border-2 border-dashed border-slate-300 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all text-center"
+                    className="w-full p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-slate-700 transition-all text-center"
                   >
-                    <UploadCloud size={24} className="mx-auto mb-2 text-slate-400" />
-                    <p className="text-sm text-slate-600">Click to select a file</p>
-                    <p className="text-xs text-slate-400 mt-1">PDF, DOCX, or TXT (max 5MB)</p>
+                    <UploadCloud size={24} className="mx-auto mb-2 text-slate-400 dark:text-slate-500" />
+                    <p className="text-sm text-slate-600 dark:text-slate-300">Click to select a file</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">PDF, DOCX, or TXT (max 5MB)</p>
                   </button>
                 )}
               </div>
 
               {/* Document Type */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Document Type</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Document Type</label>
                 <select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value as Document['type'])}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 >
                   {DOCUMENT_TYPES.map(type => (
                     <option key={type} value={type}>{type}</option>
@@ -343,9 +341,9 @@ const Documents = () => {
               </div>
 
               {/* Info Note */}
-              <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
-                <AlertCircle size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-blue-700">
+              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <AlertCircle size={16} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-blue-700 dark:text-blue-300">
                   Your documents are stored securely and only visible to you. They can be attached to job applications.
                 </p>
               </div>
@@ -355,7 +353,7 @@ const Documents = () => {
                 <button
                   type="button"
                   onClick={() => setIsUploadModalOpen(false)}
-                  className="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium"
+                  className="px-4 py-2 text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
                 >
                   Cancel
                 </button>
@@ -364,8 +362,8 @@ const Documents = () => {
                   disabled={!selectedFile}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     selectedFile
-                      ? 'bg-purple-700 text-white hover:bg-purple-800 shadow-sm shadow-purple-200'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      ? 'bg-purple-600 text-white hover:bg-purple-700'
+                      : 'bg-slate-200 dark:bg-slate-600 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                   }`}
                 >
                   <UploadCloud size={16} />

@@ -94,6 +94,7 @@ const Login = () => {
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-2">
             <img src="/images/applya-logo.svg" alt="Applya" className="w-10 h-10 brightness-0 invert" />
+
             <span className="text-2xl font-bold text-white">Applya</span>
           </Link>
         </div>
